@@ -1,0 +1,18 @@
+services:
+  vpsmith:
+    image: nginx:alpine
+    container_name: vpsmith-app
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vpsmith.rule=Host(`executor.digitalplatform.online`)"
+      - "traefik.http.routers.vpsmith.entrypoints=web"
+      - "traefik.http.services.vpsmith.loadbalancer.server.port=80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - web
+
+networks:
+  web:
+    external: true
