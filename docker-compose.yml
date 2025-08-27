@@ -3,11 +3,23 @@ services:
     image: nginx:alpine
     container_name: vpsmith-app
     restart: unless-stopped
+
     labels:
+      # HTTP → HTTPS redirect
       - "traefik.enable=true"
+      - "traefik.http.routers.vpsmith-web.rule=Host(`executor.digitalplatform.online`)"
+      - "traefik.http.routers.vpsmith-web.entrypoints=web"
+      - "traefik.http.routers.vpsmith-web.middlewares=redirect-to-https@docker"
+
+      # HTTPS router
       - "traefik.http.routers.vpsmith.rule=Host(`executor.digitalplatform.online`)"
-      - "traefik.http.routers.vpsmith.entrypoints=web"
+      - "traefik.http.routers.vpsmith.entrypoints=websecure"
+      - "traefik.http.routers.vpsmith.tls.certresolver=letsencrypt"
       - "traefik.http.services.vpsmith.loadbalancer.server.port=80"
+
+      # Redirect middleware
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     networks:
